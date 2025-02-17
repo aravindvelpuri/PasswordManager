@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules xmlns:android="http://schemas.android.com/apk/res/android">
+    <cloud-backup>
+        <include domain="sharedpref" path="*.xml"/>  <!-- ✅ Fixed domain name -->
+        <include domain="database" path="*.db"/>
+        <include domain="file" path="*"/>
+    </cloud-backup>
+
+    <device-transfer>
+        <include domain="sharedpref" path="*.xml"/>  <!-- ✅ Fixed domain name -->
+        <include domain="database" path="*.db"/>
+        <include domain="file" path="*"/>
+    </device-transfer>
+</data-extraction-rules>
