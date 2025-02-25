@@ -166,9 +166,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit, repository: PasswordRepository) {
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_google_logo),
+                                    painter = painterResource(id = R.drawable.google),
                                     contentDescription = "Google Logo",
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(40.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Sign in with Google", fontSize = 16.sp)
