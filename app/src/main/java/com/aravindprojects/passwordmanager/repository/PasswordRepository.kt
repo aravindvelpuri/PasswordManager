@@ -70,10 +70,16 @@ class PasswordRepository {
         }
     }
 
-    fun deletePassword(id: String) {
+    fun deletePassword(entry: PasswordEntry) {  // ✅ Expects PasswordEntry
         val userId = auth.currentUser?.uid
         if (userId != null) {
-            database.child(userId).child(id).removeValue()
+            database.child(userId).child(entry.id).removeValue()
+                .addOnSuccessListener {
+                    Log.d("PasswordRepository", "Password deleted successfully: ${entry.website}")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("PasswordRepository", "Failed to delete password: ${e.message}")
+                }
         }
     }
 

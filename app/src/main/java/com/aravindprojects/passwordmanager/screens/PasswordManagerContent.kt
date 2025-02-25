@@ -110,7 +110,14 @@ fun PasswordManagerContent(repository: PasswordRepository, onProfileClick: () ->
             }
         }
     } else {
-        PasswordDetailScreen(entry = selectedEntry!!, onBack = { selectedEntry = null })
+        PasswordDetailScreen(
+            entry = selectedEntry!!,
+            onBack = { selectedEntry = null },
+            onDelete = { entryToDelete ->  // ✅ Expect full PasswordEntry
+                repository.deletePassword(entryToDelete)  // ✅ Pass full entry instead of just ID
+                selectedEntry = null // Close details screen after deletion
+            }
+        )
     }
 
     if (showAddDialog) {
@@ -136,6 +143,7 @@ fun PasswordManagerContent(repository: PasswordRepository, onProfileClick: () ->
         )
     }
 }
+
 
 // 🔎 Search Bar Component
 @Composable
