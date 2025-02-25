@@ -113,9 +113,15 @@ fun PasswordManagerContent(repository: PasswordRepository, onProfileClick: () ->
         PasswordDetailScreen(
             entry = selectedEntry!!,
             onBack = { selectedEntry = null },
-            onDelete = { entryToDelete ->  // ✅ Expect full PasswordEntry
-                repository.deletePassword(entryToDelete)  // ✅ Pass full entry instead of just ID
-                selectedEntry = null // Close details screen after deletion
+            onDelete = { entryToDelete ->
+                repository.deletePassword(entryToDelete)
+                repository.fetchPasswords() // 🔄 Fetch updated data after deletion
+                selectedEntry = null
+            },
+            onUpdate = { updatedEntry ->
+                repository.updatePassword(updatedEntry)
+                repository.fetchPasswords() // 🔄 Refresh list after update
+                selectedEntry = null // Close details screen
             }
         )
     }
