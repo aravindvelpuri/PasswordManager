@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.aravindprojects.passwordmanager.screens
 
 import android.content.ClipData
@@ -15,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Launch
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults.outlinedButtonBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,8 +77,8 @@ fun PasswordDetailScreen(
         ) {
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White),
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.elevatedCardElevation(8.dp)
             ) {
@@ -329,7 +332,7 @@ fun CustomDeleteDialog(
                         OutlinedButton(
                             onClick = onDismiss,
                             shape = RoundedCornerShape(10.dp),
-                            border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp)
+                            border = outlinedButtonBorder.copy(width = 1.dp)
                         ) {
                             Text("Cancel", fontSize = 16.sp, color = Color.Black)
                         }
@@ -389,7 +392,7 @@ fun OutlinedActionButton(text: String, icon: ImageVector, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp),
+        border = outlinedButtonBorder.copy(width = 1.dp),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryBlue)
     ) {
         Icon(icon, contentDescription = text, tint = PrimaryBlue, modifier = Modifier.padding(end = 8.dp))

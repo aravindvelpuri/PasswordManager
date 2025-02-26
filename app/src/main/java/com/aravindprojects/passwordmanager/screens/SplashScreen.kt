@@ -22,13 +22,12 @@ import com.aravindprojects.passwordmanager.R
 
 @Composable
 fun SplashScreen() {
-    val gradientColors = listOf(Color(0xFF37B5FF), Color(0xFF0288D1)) // Gradient background
+    val gradientColors = listOf(Color(0xFF37B5FF), Color(0xFF0288D1))
     val backgroundColor = Brush.verticalGradient(gradientColors)
     val textColor = Color.White
-    val iconBackground = Color.White // White background to contrast the blue icon
-    val iconSize = 85.dp // Adjusted size for visibility
+    val iconBackground = Color.White
+    val iconSize = 85.dp
 
-    // Animation for smooth scaling effect
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -49,25 +48,23 @@ fun SplashScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Circular container to ensure proper icon visibility
             Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(CircleShape) // Ensures a perfect circular shape
-                    .background(iconBackground) // White background for visibility
-                    .padding(12.dp), // Padding prevents stretching
+                    .clip(CircleShape)
+                    .background(iconBackground)
+                    .padding(12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                     contentDescription = "App Logo",
-                    modifier = Modifier.size(iconSize) // Ensures proper scaling
+                    modifier = Modifier.size(iconSize)
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // App Title
             Text(
                 text = "Password Manager",
                 fontSize = 26.sp,
@@ -77,7 +74,6 @@ fun SplashScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
             Text(
                 text = "Securely store and manage your passwords",
                 fontSize = 14.sp,
@@ -87,11 +83,10 @@ fun SplashScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Animated Loading Indicator
             CircularProgressIndicator(
                 color = Color.White,
                 strokeWidth = 3.dp,
-                modifier = Modifier.scale(scale) // Adds a subtle animation
+                modifier = Modifier.scale(scale)
             )
         }
     }

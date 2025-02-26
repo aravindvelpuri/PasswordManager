@@ -1,6 +1,7 @@
 package com.aravindprojects.passwordmanager.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,7 +25,6 @@ import kotlinx.coroutines.delay
 
 // 🎨 Color Palette
 val PrimaryBlue = Color(0xFF37B5FF)
-val LightGray = Color(0xFFF0F4F8)
 val DarkGray = Color(0xFF222222)
 val PlaceholderGray = Color(0xFF757575)
 
@@ -46,85 +46,104 @@ fun PasswordManagerContent(repository: PasswordRepository, onProfileClick: () ->
             isRefreshing = false
         }
     }
-
-    if (selectedEntry == null) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Password Manager", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White) },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryBlue),
-                    actions = {
-                        IconButton(onClick = onProfileClick) {
-                            Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Profile", tint = Color.White)
-                        }
-                    }
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showAddDialog = true },
-                    containerColor = PrimaryBlue
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Password", tint = Color.White)
-                }
-            }
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                SearchBar(searchQuery, onQueryChange = { searchQuery = it })
-
-                SwipeRefresh(
-                    state = swipeRefreshState,
-                    onRefresh = { isRefreshing = true },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val filteredEntries = passwordEntries.filter {
-                        it.website.contains(searchQuery, ignoreCase = true) ||
-                                it.username.contains(searchQuery, ignoreCase = true)
-                    }
-
-                    val categorizedEntries = filteredEntries
-                        .groupBy { it.category }
-                        .toSortedMap() // Sort categories alphabetically
-
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        if (passwordEntries.isEmpty()) {
-                            EmptyPasswordListMessage()
-                        } else {
-                            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                categorizedEntries.forEach { (category, entries) ->
-                                    item {
-                                        CategoryHeader(category)
+    Crossfade(targetState = selectedEntry) { entry ->
+                if (entry == null) {
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                title = {
+                                    Text(
+                                        "Password Manager",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryBlue),
+                                actions = {
+                                    IconButton(onClick = onProfileClick) {
+                                        Icon(
+                                            imageVector = Icons.Default.AccountCircle,
+                                            contentDescription = "Profile",
+                                            tint = Color.White
+                                        )
                                     }
-                                    items(entries.sortedBy { it.website }) { entry ->
-                                        PasswordListItem(entry, onClick = { selectedEntry = entry })
+                                }
+                            )
+                        },
+                        floatingActionButton = {
+                            FloatingActionButton(
+                                onClick = { showAddDialog = true },
+                                containerColor = PrimaryBlue
+                            ) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = "Add Password",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    ) { paddingValues ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            SearchBar(searchQuery, onQueryChange = { searchQuery = it })
+
+                            SwipeRefresh(
+                                state = swipeRefreshState,
+                                onRefresh = { isRefreshing = true },
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                val filteredEntries = passwordEntries.filter {
+                                    it.website.contains(searchQuery, ignoreCase = true) ||
+                                            it.username.contains(searchQuery, ignoreCase = true)
+                                }
+
+                                val categorizedEntries = filteredEntries
+                                    .groupBy { it.category }
+                                    .toSortedMap() // Sort categories alphabetically
+
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    if (passwordEntries.isEmpty()) {
+                                        EmptyPasswordListMessage()
+                                    } else {
+                                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                            categorizedEntries.forEach { (category, entries) ->
+                                                item {
+                                                    CategoryHeader(category)
+                                                }
+                                                items(entries.sortedBy { it.website }) { entry ->
+                                                    PasswordListItem(
+                                                        entry,
+                                                        onClick = { selectedEntry = entry })
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                } else {
+                    PasswordDetailScreen(
+                        entry = entry,
+                        onBack = { selectedEntry = null },
+                        onDelete = { entryToDelete ->
+                            repository.deletePassword(entryToDelete)
+                            repository.fetchPasswords() // 🔄 Fetch updated data after deletion
+                            selectedEntry = null
+                        },
+                        onUpdate = { updatedEntry ->
+                            repository.updatePassword(updatedEntry)
+                            repository.fetchPasswords() // 🔄 Refresh list after update
+                            selectedEntry = null // Close details screen
+                        }
+                    )
                 }
             }
-        }
-    } else {
-        PasswordDetailScreen(
-            entry = selectedEntry!!,
-            onBack = { selectedEntry = null },
-            onDelete = { entryToDelete ->
-                repository.deletePassword(entryToDelete)
-                repository.fetchPasswords() // 🔄 Fetch updated data after deletion
-                selectedEntry = null
-            },
-            onUpdate = { updatedEntry ->
-                repository.updatePassword(updatedEntry)
-                repository.fetchPasswords() // 🔄 Refresh list after update
-                selectedEntry = null // Close details screen
-            }
-        )
-    }
+
 
     if (showAddDialog) {
         AddPasswordDialog(
@@ -151,7 +170,6 @@ fun PasswordManagerContent(repository: PasswordRepository, onProfileClick: () ->
 }
 
 
-// 🔎 Search Bar Component
 @Composable
 fun SearchBar(searchQuery: String, onQueryChange: (String) -> Unit) {
     Card(
@@ -159,15 +177,21 @@ fun SearchBar(searchQuery: String, onQueryChange: (String) -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = LightGray)
+        colors = CardDefaults.cardColors(containerColor = Color.White) // Make it White for better contrast
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(horizontal = 12.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = Icons.Default.Search, contentDescription = "Search", tint = PrimaryBlue, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.width(5.dp))
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = PrimaryBlue,
+                modifier = Modifier.size(30.dp)
+            )
             Spacer(modifier = Modifier.width(8.dp))
 
             TextField(
@@ -176,7 +200,13 @@ fun SearchBar(searchQuery: String, onQueryChange: (String) -> Unit) {
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                placeholder = { Text("Search by website or username", fontSize = 17.sp, color = PlaceholderGray) },
+                placeholder = {
+                    Text(
+                        "Search by website or username",
+                        fontSize = 17.sp,
+                        color = Color.Gray // Darker placeholder color
+                    )
+                },
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(fontSize = 17.sp, color = DarkGray),
                 colors = TextFieldDefaults.colors(
@@ -185,12 +215,13 @@ fun SearchBar(searchQuery: String, onQueryChange: (String) -> Unit) {
                     cursorColor = PrimaryBlue,
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent
                 )
             )
 
             if (searchQuery.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = PlaceholderGray)
+                    Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = PrimaryBlue)
                 }
             }
         }
@@ -218,10 +249,10 @@ fun PasswordListItem(entry: PasswordEntry, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .background(Color.White),
+            .clickable { onClick() }, // ✅ Make the item clickable
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.elevatedCardElevation(4.dp),
-        onClick = onClick
+        elevation = CardDefaults.elevatedCardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5),contentColor = DarkGray)
     ) {
         Row(
             modifier = Modifier
@@ -230,7 +261,7 @@ fun PasswordListItem(entry: PasswordEntry, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Lock,  // 🔑 Lock icon for password
+                imageVector = Icons.Default.Lock,
                 contentDescription = "Password Icon",
                 tint = PrimaryBlue,
                 modifier = Modifier.size(24.dp)
@@ -244,7 +275,7 @@ fun PasswordListItem(entry: PasswordEntry, onClick: () -> Unit) {
             }
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward, // ➡️ Arrow icon for navigation
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "Go to Details",
                 tint = PlaceholderGray
             )
