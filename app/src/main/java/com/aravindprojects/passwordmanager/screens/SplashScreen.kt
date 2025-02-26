@@ -1,5 +1,6 @@
 package com.aravindprojects.passwordmanager.screens
 
+import android.content.pm.PackageManager
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,8 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,12 +23,20 @@ import com.aravindprojects.passwordmanager.R
 
 @Composable
 fun SplashScreen() {
-    val gradientColors = listOf(Color(0xFF37B5FF), Color(0xFF0288D1))
-    val backgroundColor = Brush.verticalGradient(gradientColors)
-    val textColor = Color.White
-    val iconBackground = Color.White
-    val iconSize = 85.dp
+    // Get app version name dynamically
+    val context = LocalContext.current
+    val versionName = try {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName
+    } catch (e: PackageManager.NameNotFoundException) {
+        "1.0" // Default fallback version
+    }
 
+    // UI Colors
+    val backgroundColor = Color.White
+    val textColor = Color(0xFF0288D1)
+    val iconBackground = Color.White
+
+    // Animation for Loading Indicator
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -48,23 +57,28 @@ fun SplashScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            Spacer(modifier = Modifier.fillMaxHeight(.25f)) // Adjusted slightly for better balance
+
+            // App Logo
             Box(
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(120.dp) // Increased size for better visibility
                     .clip(CircleShape)
-                    .background(iconBackground)
-                    .padding(12.dp),
+                    .background(iconBackground),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    painter = painterResource(id = R.drawable.play_store_512),
                     contentDescription = "App Logo",
-                    modifier = Modifier.size(iconSize)
+                    modifier = Modifier
+                        .size(120.dp) // Adjusted to fit in the Box
+                        .clip(CircleShape)
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // App Name
             Text(
                 text = "Password Manager",
                 fontSize = 26.sp,
@@ -74,6 +88,7 @@ fun SplashScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Tagline
             Text(
                 text = "Securely store and manage your passwords",
                 fontSize = 14.sp,
@@ -81,12 +96,24 @@ fun SplashScreen() {
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Loading Indicator with Animation
             CircularProgressIndicator(
-                color = Color.White,
+                color = textColor,
                 strokeWidth = 3.dp,
                 modifier = Modifier.scale(scale)
+            )
+
+            Spacer(modifier = Modifier.fillMaxHeight(.5f)) // Reduced from .6f for better layout balance
+
+            // Version Name Display
+            Text(
+                text = "Version $versionName",
+                fontSize = 16.sp, // Reduced slightly for better UI consistency
+                fontWeight = FontWeight.Medium, // Looks more natural with other text
+                color = textColor.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
             )
         }
     }
