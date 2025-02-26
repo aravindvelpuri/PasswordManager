@@ -260,18 +260,27 @@ fun PasswordListItem(entry: PasswordEntry, onClick: () -> Unit) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "Password Icon",
-                tint = PrimaryBlue,
-                modifier = Modifier.size(24.dp)
-            )
+            if (entry.packageName.isNotEmpty()) {
+                Icon(
+                    imageVector = Icons.Default.Android,
+                    contentDescription = "Password Icon",
+                    tint = PrimaryBlue,
+                    modifier = Modifier.size(40.dp)
+                )
+            } else if (entry.webUrl.isNotEmpty()) {
+                Icon(
+                    imageVector = Icons.Default.Web,
+                    contentDescription = "Password Icon",
+                    tint = PrimaryBlue,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(20.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(entry.website, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkGray)
-                Text(entry.username, fontSize = 14.sp, color = PlaceholderGray)
+                Text(entry.website, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkGray)
+                Text("Username: "+entry.username, fontSize = 16.sp, color = Color.DarkGray)
             }
 
             Icon(
