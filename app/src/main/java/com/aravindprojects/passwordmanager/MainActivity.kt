@@ -11,11 +11,13 @@ import androidx.core.content.ContextCompat
 import androidx.compose.runtime.*
 import androidx.fragment.app.FragmentActivity
 import com.aravindprojects.passwordmanager.screens.SplashScreen
+import com.aravindprojects.passwordmanager.screens.auth.LoginScreen
 import com.aravindprojects.passwordmanager.screens.PasswordManagerApp
 import com.aravindprojects.passwordmanager.repository.PasswordRepository
 import com.aravindprojects.passwordmanager.ui.theme.PasswordManagerTheme
 import com.aravindprojects.passwordmanager.utils.BiometricRetryBottomSheet
 import com.aravindprojects.passwordmanager.utils.FirebaseUtils
+import com.google.firebase.auth.FirebaseAuth
 import java.util.concurrent.Executor
 
 class MainActivity : FragmentActivity() {
@@ -28,39 +30,77 @@ class MainActivity : FragmentActivity() {
                 val repository = PasswordRepository()
                 var showSplash by remember { mutableStateOf(true) }
                 var showBottomSheet by remember { mutableStateOf(false) }
+                var isAuthenticated by remember { mutableStateOf(false) }
+                var isUserLoggedIn by remember { mutableStateOf(false) }
+                var biometricTriggered by remember { mutableStateOf(false) }
+                var isNewLogin by remember { mutableStateOf(false) } // ✅ Track new logins
 
-                LaunchedEffect(Unit) {
-                    authenticateWithBiometrics(
-                        activity = this@MainActivity,
-                        onSuccess = {
+                val auth = FirebaseAuth.getInstance()
+
+                LaunchedEffect(auth.currentUser) {
+                    isUserLoggedIn = auth.currentUser != null
+
+                    if (isUserLoggedIn) {
+                        if (!isAuthenticated && !biometricTriggered && !isNewLogin) {
+                            biometricTriggered = true
+                            authenticateWithBiometrics(
+                                activity = this@MainActivity,
+                                onSuccess = {
+                                    isAuthenticated = true
+                                    showSplash = false
+                                },
+                                onFailure = {
+                                    Handler(Looper.getMainLooper()).postDelayed({
+                                        showBottomSheet = true
+                                    }, 2000)
+                                }
+                            )
+                        } else {
                             showSplash = false
-                        },
-                        onFailure = {
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                showBottomSheet = true // Show bottom sheet when user cancels
-                            }, 2000)
                         }
-                    )
+                    } else {
+                        showSplash = false
+                    }
                 }
 
                 if (showSplash) {
                     SplashScreen()
                 } else {
-                    PasswordManagerApp(repository = repository)
-                }
-
-                if (showBottomSheet) {
-                    BiometricRetryBottomSheet(
-                        onRetry = {
-                            showBottomSheet = false
-                            authenticateWithBiometrics(
-                                activity = this@MainActivity,
-                                onSuccess = { showSplash = false },
-                                onFailure = { showBottomSheet = true }
+                    when {
+                        !isUserLoggedIn -> {
+                            LoginScreen(
+                                onLoginSuccess = {
+                                    isUserLoggedIn = true
+                                    isAuthenticated = true  // ✅ Directly authenticate new login
+                                    biometricTriggered = false
+                                    isNewLogin = true // ✅ Set flag for new login
+                                },
+                                repository = repository
                             )
-                        },
-                        onExit = { finish() }
-                    )
+                        }
+
+                        !isAuthenticated -> {
+                            BiometricRetryBottomSheet(
+                                onRetry = {
+                                    showBottomSheet = false
+                                    authenticateWithBiometrics(
+                                        activity = this@MainActivity,
+                                        onSuccess = {
+                                            isAuthenticated = true
+                                        },
+                                        onFailure = {
+                                            showBottomSheet = true
+                                        }
+                                    )
+                                },
+                                onExit = { finish() }
+                            )
+                        }
+
+                        else -> {
+                            PasswordManagerApp(repository = repository)
+                        }
+                    }
                 }
             }
         }
@@ -95,7 +135,7 @@ class MainActivity : FragmentActivity() {
 
                         if (errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
                             errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
-                            onFailure() // ❌ Show Bottom Sheet when user cancels
+                            onFailure() // ❌ Show bottom sheet when user cancels
                             return
                         }
 
@@ -117,7 +157,7 @@ class MainActivity : FragmentActivity() {
 
             biometricPrompt.authenticate(promptInfo)
         } else {
-            // ✅ If biometrics are NOT supported, skip authentication and proceed
+            // ✅ If biometrics are NOT supported, proceed to main app
             onSuccess()
         }
     }

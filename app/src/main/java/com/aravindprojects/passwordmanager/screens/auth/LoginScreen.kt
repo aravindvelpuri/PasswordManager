@@ -67,8 +67,12 @@ fun LoginScreen(onLoginSuccess: () -> Unit, repository: PasswordRepository) {
                 FirebaseAuth.getInstance().signInWithCredential(credential)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            repository.fetchPasswords() // Refresh data after login
-                            onLoginSuccess()
+                            FirebaseAuth.getInstance().currentUser?.let {
+                                repository.fetchPasswords() // ✅ Fetch passwords after login
+                                onLoginSuccess() // ✅ Notify MainActivity that login is successful
+                            } ?: run {
+                                errorMessage = "Authentication failed. Please try again."
+                            }
                         } else {
                             errorMessage = getErrorType(task.exception?.localizedMessage)
                         }
@@ -117,7 +121,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, repository: PasswordRepository) {
                         Image(
                             painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                             contentDescription = "App Logo",
-                            modifier = Modifier.size(85.dp)
+                            modifier = Modifier.size(200.dp)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
