@@ -21,18 +21,25 @@ object CryptoUtils {
     private fun generateKeyIfNecessary() {
         val keyStore = KeyStore.getInstance(ANDROID_KEY_STORE).apply { load(null) }
         if (!keyStore.containsAlias(KEY_ALIAS)) {
-            val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE)
-            val spec = KeyGenParameterSpec.Builder(
-                KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-            )
-                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                .setKeySize(256)
-                .build()
-            keyGenerator.init(spec)
-            keyGenerator.generateKey()
-            Log.d("CryptoUtils", "Generated new encryption key.")
+            try {
+                val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE)
+                val spec = KeyGenParameterSpec.Builder(
+                    KEY_ALIAS,
+                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                )
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    .setKeySize(256)
+                    .setUserAuthenticationRequired(false) // Key persistence across app updates
+                    .build()
+                keyGenerator.init(spec)
+                keyGenerator.generateKey()
+                Log.d("CryptoUtils", "Generated new encryption key.")
+            } catch (e: Exception) {
+                Log.e("CryptoUtils", "Key generation failed: ${e.message}")
+            }
+        } else {
+            Log.d("CryptoUtils", "Encryption key already exists.")
         }
     }
 

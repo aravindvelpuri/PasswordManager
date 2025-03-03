@@ -19,12 +19,14 @@ googleid = "1.1.1"
 materialIconsExtended = "1.7.8"
 navigationCompose = "2.8.7"
 playServicesAuth = "21.3.0"
+securityCrypto = "1.1.0-alpha06"
 
 [libraries]
 accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

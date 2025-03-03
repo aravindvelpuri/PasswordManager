@@ -13,8 +13,8 @@ android {
         applicationId = "com.aravindprojects.passwordmanager"
         minSdk = 24
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2.1"
+        versionCode = 4
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -67,4 +67,5 @@ dependencies {
     implementation(libs.accompanist.swiperefresh)
     implementation(libs.jsoup)
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.security.crypto)
 }
